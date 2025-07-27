@@ -7,8 +7,16 @@
 # Python 3.11.2 / debian12
 # API v4r7 で動作確認
 # 立花証券ｅ支店ＡＰＩ利用のサンプルコード
-# 機能:　現物売り注文を行ないます。
 #
+# 機能: 現物売り注文を行ないます。
+#
+# 設定項目
+# 銘柄コード: my_sIssueCode （実際の銘柄コードを入れてください。）
+# 市場: my_sSizyouC （00:東証   現在(2021/07/01)、東証のみ可能。）
+# 執行条件: my_sCondition   （0:指定なし、2:寄付、4:引け、6:不成。指し値は、0:指定なし。）
+# 注文値段: my_sOrderPrice  （*:指定なし、0:成行、上記以外は、注文値段。小数点については、関連資料:「立花証券・e支店・API、REQUEST I/F、マスタデータ利用方法」の「2-12. 呼値」参照。）
+# 注文数量: my_sOrderSuryou
+# 
 # 利用方法: 
 # 事前に「e_api_login_tel.py」を実行して、仮想URL等を取得しておいてください。
 #
@@ -56,6 +64,7 @@ class class_def_login_property:
         self.sUrlPrice = ''         # price用仮想URL
         self.sUrlEvent = ''         # event用仮想URL
         self.sZyoutoekiKazeiC = ''  # 8.譲渡益課税区分    1：特定  3：一般  5：NISA     ログインの返信データで設定済み。 
+        self.sSinyouKouzaKubun = '' # 信用取引口座開設区分  0：未開設  1：開設
         self.sSecondPassword = ''   # 22.第二パスワード  APIでは第２暗証番号を省略できない。 関連資料:「立花証券・e支店・API、インターフェース概要」の「3-2.ログイン、ログアウト」参照
         self.sJsonOfmt = ''         # 返り値の表示形式指定
         
@@ -290,16 +299,17 @@ def func_get_acconut_info(fname, class_account_property):
 # 機能： ログイン情報をファイルから取得する
 # 引数1: ログイン情報を保存したファイル名（fname_login_response = "e_api_login_response.txt"）
 # 引数2: ログインデータ型（class_def_login_property型）
-def func_get_login_info(str_fname, class_login_property):
+def func_get_login_info(str_fname, my_login_property):
     str_login_respons = func_read_from_file(str_fname)
     dic_login_respons = json.loads(str_login_respons)
-    class_login_property.sUrlRequest = dic_login_respons.get('sUrlRequest')                # request用仮想URL
-    class_login_property.sUrlMaster = dic_login_respons.get('sUrlMaster')                  # master用仮想URL
-    class_login_property.sUrlPrice = dic_login_respons.get('sUrlPrice')                    # price用仮想URL
-    class_login_property.sUrlEvent = dic_login_respons.get('sUrlEvent')                    # event用仮想URL
-    class_login_property.sUrlEventWebSocket = dic_login_respons.get('sUrlEventWebSocket')  # webxocket用仮想URL
-    class_login_property.sZyoutoekiKazeiC = dic_login_respons.get('sZyoutoekiKazeiC')      # 8.譲渡益課税区分    1：特定  3：一般  5：NISA     ログインの返信データで設定済み。 
-    
+    my_login_property.sUrlRequest = dic_login_respons.get('sUrlRequest')                # request用仮想URL
+    my_login_property.sUrlMaster = dic_login_respons.get('sUrlMaster')                  # master用仮想URL
+    my_login_property.sUrlPrice = dic_login_respons.get('sUrlPrice')                    # price用仮想URL
+    my_login_property.sUrlEvent = dic_login_respons.get('sUrlEvent')                    # event用仮想URL
+    my_login_property.sUrlEventWebSocket = dic_login_respons.get('sUrlEventWebSocket')  # webxocket用仮想URL
+    my_login_property.sZyoutoekiKazeiC = dic_login_respons.get('sZyoutoekiKazeiC')      # 8.譲渡益課税区分    1：特定  3：一般  5：NISA     ログインの返信データで設定済み。 
+    my_login_property.sZyoutoekiKazeiC = dic_login_respons.get('sSinyouKouzaKubun')     # 信用取引口座開設区分  0：未開設  1：開設     ログインの返信データで設定済み。 
+
 
 # 機能： p_noをファイルから取得する
 # 引数1: p_noを保存したファイル名（fname_info_p_no = "e_api_info_p_no.txt"）
@@ -338,11 +348,6 @@ def func_save_p_no(str_fname_output, int_p_no):
     print('ファイル名:', str_fname_output)
 
 #--- 以上 共通コード -------------------------------------------------
-
-
-
-
-
 
 
 # 参考資料（必ず最新の資料を参照してください。）--------------------------
